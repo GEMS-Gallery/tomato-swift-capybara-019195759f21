@@ -36,7 +36,11 @@ actor {
   var tweets = Buffer.Buffer<(TweetId, Tweet)>(0);
   let userProfiles = HashMap.HashMap<UserId, UserProfile>(10, Principal.equal, Principal.hash);
 
-  public shared(msg) func createTweet(content: Text) : async Result.Result<Tweet, Text> {
+  public shared({ caller }) func createTweet(content: Text) : async Result.Result<Tweet, Text> {
+    if (Principal.isAnonymous(caller)) {
+      return #err("Authentication required");
+    };
+
     if (Text.size(content) == 0 or Text.size(content) > 280) {
       return #err("Tweet content must be between 1 and 280 characters");
     };
@@ -44,7 +48,7 @@ actor {
     let tweet : Tweet = {
       id = tweetIdCounter;
       content = content;
-      author = msg.caller;
+      author = caller;
       timestamp = Time.now();
       likes = 0;
       retweets = 0;
@@ -63,21 +67,28 @@ actor {
     userProfiles.get(userId)
   };
 
-  public shared(msg) func updateUserProfile(username: Text, bio: Text) : async Result.Result<UserProfile, Text> {
-    let userId = msg.caller;
+  public shared({ caller }) func updateUserProfile(username: Text, bio: Text) : async Result.Result<UserProfile, Text> {
+    if (Principal.isAnonymous(caller)) {
+      return #err("Authentication required");
+    };
+
     let profile : UserProfile = {
-      userId = userId;
+      userId = caller;
       username = username;
       bio = bio;
       following = [];
       followers = [];
     };
-    userProfiles.put(userId, profile);
+    userProfiles.put(caller, profile);
     #ok(profile)
   };
 
-  public shared(msg) func likeTweet(tweetId: TweetId) : async Result.Result<Tweet, Text> {
-    let tweetIndex = Buffer.indexOf<(TweetId, Tweet)>((tweetId, { id = tweetId; content = ""; author = msg.caller; timestamp = 0; likes = 0; retweets = 0 }), tweets, func((id1, _), (id2, _)) { id1 == id2 });
+  public shared({ caller }) func likeTweet(tweetId: TweetId) : async Result.Result<Tweet, Text> {
+    if (Principal.isAnonymous(caller)) {
+      return #err("Authentication required");
+    };
+
+    let tweetIndex = Buffer.indexOf<(TweetId, Tweet)>((tweetId, { id = tweetId; content = ""; author = caller; timestamp = 0; likes = 0; retweets = 0 }), tweets, func((id1, _), (id2, _)) { id1 == id2 });
     switch (tweetIndex) {
       case null { #err("Tweet not found") };
       case (?index) {
@@ -96,8 +107,12 @@ actor {
     }
   };
 
-  public shared(msg) func retweet(tweetId: TweetId) : async Result.Result<Tweet, Text> {
-    let tweetIndex = Buffer.indexOf<(TweetId, Tweet)>((tweetId, { id = tweetId; content = ""; author = msg.caller; timestamp = 0; likes = 0; retweets = 0 }), tweets, func((id1, _), (id2, _)) { id1 == id2 });
+  public shared({ caller }) func retweet(tweetId: TweetId) : async Result.Result<Tweet, Text> {
+    if (Principal.isAnonymous(caller)) {
+      return #err("Authentication required");
+    };
+
+    let tweetIndex = Buffer.indexOf<(TweetId, Tweet)>((tweetId, { id = tweetId; content = ""; author = caller; timestamp = 0; likes = 0; retweets = 0 }), tweets, func((id1, _), (id2, _)) { id1 == id2 });
     switch (tweetIndex) {
       case null { #err("Tweet not found") };
       case (?index) {
@@ -116,9 +131,12 @@ actor {
     }
   };
 
-  public shared(msg) func followUser(userToFollow: UserId) : async Result.Result<(), Text> {
-    let follower = msg.caller;
-    switch (userProfiles.get(follower), userProfiles.get(userToFollow)) {
+  public shared({ caller }) func followUser(userToFollow: UserId) : async Result.Result<(), Text> {
+    if (Principal.isAnonymous(caller)) {
+      return #err("Authentication required");
+    };
+
+    switch (userProfiles.get(caller), userProfiles.get(userToFollow)) {
       case (null, _) { #err("Follower profile not found") };
       case (_, null) { #err("User to follow not found") };
       case (?followerProfile, ?followeeProfile) {
@@ -134,9 +152,9 @@ actor {
           username = followeeProfile.username;
           bio = followeeProfile.bio;
           following = followeeProfile.following;
-          followers = Array.append(followeeProfile.followers, [follower]);
+          followers = Array.append(followeeProfile.followers, [caller]);
         };
-        userProfiles.put(follower, updatedFollowerProfile);
+        userProfiles.put(caller, updatedFollowerProfile);
         userProfiles.put(userToFollow, updatedFolloweeProfile);
         #ok()
       };
