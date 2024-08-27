@@ -27,6 +27,9 @@ type UserProfile = {
   followers: string[];
 };
 
+// Fallback canister ID if environment variable is not set
+const FALLBACK_CANISTER_ID = 'rrkah-fqaaa-aaaaa-aaaaq-cai';
+
 const App: React.FC = () => {
   const [tweets, setTweets] = useState<Tweet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,11 +67,16 @@ const App: React.FC = () => {
   const initActor = async (client: AuthClient) => {
     const identity = client.getIdentity();
     const agent = new HttpAgent({ identity });
-    const newActor = Actor.createActor(idlFactory, {
-      agent,
-      canisterId: process.env.BACKEND_CANISTER_ID,
-    });
-    setActor(newActor);
+    const canisterId = import.meta.env.VITE_BACKEND_CANISTER_ID || FALLBACK_CANISTER_ID;
+    try {
+      const newActor = Actor.createActor(idlFactory, {
+        agent,
+        canisterId,
+      });
+      setActor(newActor);
+    } catch (error) {
+      console.error('Error creating actor:', error);
+    }
   };
 
   const login = async () => {
@@ -97,6 +105,7 @@ const App: React.FC = () => {
   };
 
   const fetchTweets = async () => {
+    if (!actor) return;
     try {
       const fetchedTweets = await actor.getAllTweets();
       setTweets(fetchedTweets);
