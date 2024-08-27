@@ -39,24 +39,32 @@ const App: React.FC = () => {
   }, []);
 
   const initAuth = async () => {
-    const client = await AuthClient.create();
-    setAuthClient(client);
-    const isAuthenticated = await client.isAuthenticated();
-    setIsAuthenticated(isAuthenticated);
-    if (isAuthenticated) {
-      fetchUserProfile();
+    try {
+      const client = await AuthClient.create();
+      setAuthClient(client);
+      const isAuthenticated = await client.isAuthenticated();
+      setIsAuthenticated(isAuthenticated);
+      if (isAuthenticated) {
+        await fetchUserProfile();
+      }
+    } catch (error) {
+      console.error('Error initializing authentication:', error);
     }
   };
 
   const login = async () => {
     if (authClient) {
-      await authClient.login({
-        identityProvider: 'https://identity.ic0.app/#authorize',
-        onSuccess: () => {
-          setIsAuthenticated(true);
-          fetchUserProfile();
-        },
-      });
+      try {
+        await authClient.login({
+          identityProvider: 'https://identity.ic0.app/#authorize',
+          onSuccess: async () => {
+            setIsAuthenticated(true);
+            await fetchUserProfile();
+          },
+        });
+      } catch (error) {
+        console.error('Error during login:', error);
+      }
     }
   };
 
@@ -81,12 +89,14 @@ const App: React.FC = () => {
 
   const fetchUserProfile = async () => {
     if (authClient) {
-      const identity = authClient.getIdentity();
-      const principal = identity.getPrincipal();
       try {
-        const profile = await backend.getUserProfile(principal);
-        if (profile) {
-          setUserProfile(profile);
+        const identity = authClient.getIdentity();
+        const principal = identity.getPrincipal();
+        const result = await backend.getUserProfile(principal);
+        if ('ok' in result) {
+          setUserProfile(result.ok);
+        } else {
+          console.error('Error fetching user profile:', result.err);
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
@@ -176,10 +186,10 @@ const App: React.FC = () => {
               </Typography>
               {userProfile ? (
                 <>
-                  <Typography variant="subtitle1">{userProfile.username}</Typography>
-                  <Typography variant="body2">{userProfile.bio}</Typography>
-                  <Typography variant="body2">Following: {userProfile.following.length}</Typography>
-                  <Typography variant="body2">Followers: {userProfile.followers.length}</Typography>
+                  <Typography variant="subtitle1">{userProfile.username || 'No username set'}</Typography>
+                  <Typography variant="body2">{userProfile.bio || 'No bio set'}</Typography>
+                  <Typography variant="body2">Following: {userProfile.following?.length || 0}</Typography>
+                  <Typography variant="body2">Followers: {userProfile.followers?.length || 0}</Typography>
                 </>
               ) : (
                 <Typography variant="body2">No profile found</Typography>

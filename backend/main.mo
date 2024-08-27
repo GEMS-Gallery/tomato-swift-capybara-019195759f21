@@ -63,8 +63,21 @@ actor {
     Array.reverse(Array.map<(TweetId, Tweet), Tweet>(Buffer.toArray(tweets), func((_, tweet)) { tweet }))
   };
 
-  public query func getUserProfile(userId: UserId) : async ?UserProfile {
-    userProfiles.get(userId)
+  public query func getUserProfile(userId: UserId) : async Result.Result<UserProfile, Text> {
+    switch (userProfiles.get(userId)) {
+      case null {
+        let newProfile : UserProfile = {
+          userId = userId;
+          username = "";
+          bio = "";
+          following = [];
+          followers = [];
+        };
+        userProfiles.put(userId, newProfile);
+        #ok(newProfile)
+      };
+      case (?profile) { #ok(profile) };
+    }
   };
 
   public shared({ caller }) func updateUserProfile(username: Text, bio: Text) : async Result.Result<UserProfile, Text> {

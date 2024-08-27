@@ -31,7 +31,7 @@ export interface _SERVICE {
   'followUser' : ActorMethod<[UserId], Result_2>,
   'getAllTweets' : ActorMethod<[], Array<Tweet>>,
   'getUserFeed' : ActorMethod<[UserId], Array<Tweet>>,
-  'getUserProfile' : ActorMethod<[UserId], [] | [UserProfile]>,
+  'getUserProfile' : ActorMethod<[UserId], Result>,
   'likeTweet' : ActorMethod<[TweetId], Result_1>,
   'retweet' : ActorMethod<[TweetId], Result_1>,
   'updateUserProfile' : ActorMethod<[string, string], Result>,

@@ -38,7 +38,7 @@ service : {
   followUser: (UserId) -> (Result_2);
   getAllTweets: () -> (vec Tweet) query;
   getUserFeed: (UserId) -> (vec Tweet) query;
-  getUserProfile: (UserId) -> (opt UserProfile) query;
+  getUserProfile: (UserId) -> (Result) query;
   likeTweet: (TweetId) -> (Result_1);
   retweet: (TweetId) -> (Result_1);
   updateUserProfile: (text, text) -> (Result);

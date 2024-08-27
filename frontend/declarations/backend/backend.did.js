@@ -25,7 +25,7 @@ export const idlFactory = ({ IDL }) => {
     'followUser' : IDL.Func([UserId], [Result_2], []),
     'getAllTweets' : IDL.Func([], [IDL.Vec(Tweet)], ['query']),
     'getUserFeed' : IDL.Func([UserId], [IDL.Vec(Tweet)], ['query']),
-    'getUserProfile' : IDL.Func([UserId], [IDL.Opt(UserProfile)], ['query']),
+    'getUserProfile' : IDL.Func([UserId], [Result], ['query']),
     'likeTweet' : IDL.Func([TweetId], [Result_1], []),
     'retweet' : IDL.Func([TweetId], [Result_1], []),
     'updateUserProfile' : IDL.Func([IDL.Text, IDL.Text], [Result], []),
