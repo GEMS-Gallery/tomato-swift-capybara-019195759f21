@@ -107,7 +107,7 @@ const App: React.FC = () => {
   const fetchTweets = async () => {
     if (!actor) return;
     try {
-      const fetchedTweets = await actor.getAllTweets();
+      const fetchedTweets = await actor.get_all_tweets();
       setTweets(fetchedTweets);
       setLoading(false);
     } catch (error) {
@@ -121,7 +121,7 @@ const App: React.FC = () => {
       try {
         const identity = authClient.getIdentity();
         const principal = identity.getPrincipal();
-        const result = await actor.getUserProfile(principal);
+        const result = await actor.get_user_profile(principal);
         if ('ok' in result) {
           setUserProfile(result.ok);
         } else {
@@ -140,7 +140,7 @@ const App: React.FC = () => {
     }
     setLoading(true);
     try {
-      const result = await actor.createTweet(data.content);
+      const result = await actor.create_tweet(data.content);
       if ('ok' in result) {
         await fetchTweets();
         reset();
@@ -159,7 +159,7 @@ const App: React.FC = () => {
       return;
     }
     try {
-      await actor.likeTweet(tweetId);
+      await actor.like_tweet(tweetId);
       await fetchTweets();
     } catch (error) {
       console.error('Error liking tweet:', error);
@@ -185,7 +185,7 @@ const App: React.FC = () => {
       return;
     }
     try {
-      await actor.followUser(Principal.fromText(userToFollow));
+      await actor.follow_user(Principal.fromText(userToFollow));
       await fetchUserProfile();
     } catch (error) {
       console.error('Error following user:', error);

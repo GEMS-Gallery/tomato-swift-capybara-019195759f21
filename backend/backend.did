@@ -34,12 +34,12 @@ type Result =
    ok: UserProfile;
  };
 service : {
-  createTweet: (text) -> (Result_1);
-  followUser: (UserId) -> (Result_2);
-  getAllTweets: () -> (vec Tweet) query;
-  getUserFeed: (UserId) -> (vec Tweet) query;
-  getUserProfile: (UserId) -> (Result) query;
-  likeTweet: (TweetId) -> (Result_1);
+  create_tweet: (text) -> (Result_1);
+  follow_user: (UserId) -> (Result_2);
+  get_all_tweets: () -> (vec Tweet) query;
+  get_user_feed: (UserId) -> (vec Tweet) query;
+  get_user_profile: (UserId) -> (Result) query;
+  like_tweet: (TweetId) -> (Result_1);
   retweet: (TweetId) -> (Result_1);
-  updateUserProfile: (text, text) -> (Result);
+  update_user_profile: (text, text) -> (Result);
 }

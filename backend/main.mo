@@ -36,7 +36,7 @@ actor {
   var tweets = Buffer.Buffer<(TweetId, Tweet)>(0);
   let userProfiles = HashMap.HashMap<UserId, UserProfile>(10, Principal.equal, Principal.hash);
 
-  public shared({ caller }) func createTweet(content: Text) : async Result.Result<Tweet, Text> {
+  public shared({ caller }) func create_tweet(content: Text) : async Result.Result<Tweet, Text> {
     if (Principal.isAnonymous(caller)) {
       return #err("Authentication required");
     };
@@ -59,11 +59,11 @@ actor {
     #ok(tweet)
   };
 
-  public query func getAllTweets() : async [Tweet] {
+  public query func get_all_tweets() : async [Tweet] {
     Array.reverse(Array.map<(TweetId, Tweet), Tweet>(Buffer.toArray(tweets), func((_, tweet)) { tweet }))
   };
 
-  public query func getUserProfile(userId: UserId) : async Result.Result<UserProfile, Text> {
+  public query func get_user_profile(userId: UserId) : async Result.Result<UserProfile, Text> {
     switch (userProfiles.get(userId)) {
       case null {
         let newProfile : UserProfile = {
@@ -80,7 +80,7 @@ actor {
     }
   };
 
-  public shared({ caller }) func updateUserProfile(username: Text, bio: Text) : async Result.Result<UserProfile, Text> {
+  public shared({ caller }) func update_user_profile(username: Text, bio: Text) : async Result.Result<UserProfile, Text> {
     if (Principal.isAnonymous(caller)) {
       return #err("Authentication required");
     };
@@ -96,7 +96,7 @@ actor {
     #ok(profile)
   };
 
-  public shared({ caller }) func likeTweet(tweetId: TweetId) : async Result.Result<Tweet, Text> {
+  public shared({ caller }) func like_tweet(tweetId: TweetId) : async Result.Result<Tweet, Text> {
     if (Principal.isAnonymous(caller)) {
       return #err("Authentication required");
     };
@@ -144,7 +144,7 @@ actor {
     }
   };
 
-  public shared({ caller }) func followUser(userToFollow: UserId) : async Result.Result<(), Text> {
+  public shared({ caller }) func follow_user(userToFollow: UserId) : async Result.Result<(), Text> {
     if (Principal.isAnonymous(caller)) {
       return #err("Authentication required");
     };
@@ -174,7 +174,7 @@ actor {
     }
   };
 
-  public query func getUserFeed(userId: UserId) : async [Tweet] {
+  public query func get_user_feed(userId: UserId) : async [Tweet] {
     switch (userProfiles.get(userId)) {
       case null { [] };
       case (?profile) {

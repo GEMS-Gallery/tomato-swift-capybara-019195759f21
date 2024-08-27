@@ -21,14 +21,14 @@ export const idlFactory = ({ IDL }) => {
   });
   const Result = IDL.Variant({ 'ok' : UserProfile, 'err' : IDL.Text });
   return IDL.Service({
-    'createTweet' : IDL.Func([IDL.Text], [Result_1], []),
-    'followUser' : IDL.Func([UserId], [Result_2], []),
-    'getAllTweets' : IDL.Func([], [IDL.Vec(Tweet)], ['query']),
-    'getUserFeed' : IDL.Func([UserId], [IDL.Vec(Tweet)], ['query']),
-    'getUserProfile' : IDL.Func([UserId], [Result], ['query']),
-    'likeTweet' : IDL.Func([TweetId], [Result_1], []),
+    'create_tweet' : IDL.Func([IDL.Text], [Result_1], []),
+    'follow_user' : IDL.Func([UserId], [Result_2], []),
+    'get_all_tweets' : IDL.Func([], [IDL.Vec(Tweet)], ['query']),
+    'get_user_feed' : IDL.Func([UserId], [IDL.Vec(Tweet)], ['query']),
+    'get_user_profile' : IDL.Func([UserId], [Result], ['query']),
+    'like_tweet' : IDL.Func([TweetId], [Result_1], []),
     'retweet' : IDL.Func([TweetId], [Result_1], []),
-    'updateUserProfile' : IDL.Func([IDL.Text, IDL.Text], [Result], []),
+    'update_user_profile' : IDL.Func([IDL.Text, IDL.Text], [Result], []),
   });
 };
 export const init = ({ IDL }) => { return []; };

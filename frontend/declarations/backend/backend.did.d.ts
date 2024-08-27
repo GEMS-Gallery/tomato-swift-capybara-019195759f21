@@ -27,14 +27,14 @@ export interface UserProfile {
   'following' : Array<UserId>,
 }
 export interface _SERVICE {
-  'createTweet' : ActorMethod<[string], Result_1>,
-  'followUser' : ActorMethod<[UserId], Result_2>,
-  'getAllTweets' : ActorMethod<[], Array<Tweet>>,
-  'getUserFeed' : ActorMethod<[UserId], Array<Tweet>>,
-  'getUserProfile' : ActorMethod<[UserId], Result>,
-  'likeTweet' : ActorMethod<[TweetId], Result_1>,
+  'create_tweet' : ActorMethod<[string], Result_1>,
+  'follow_user' : ActorMethod<[UserId], Result_2>,
+  'get_all_tweets' : ActorMethod<[], Array<Tweet>>,
+  'get_user_feed' : ActorMethod<[UserId], Array<Tweet>>,
+  'get_user_profile' : ActorMethod<[UserId], Result>,
+  'like_tweet' : ActorMethod<[TweetId], Result_1>,
   'retweet' : ActorMethod<[TweetId], Result_1>,
-  'updateUserProfile' : ActorMethod<[string, string], Result>,
+  'update_user_profile' : ActorMethod<[string, string], Result>,
 }
 export declare const idlFactory: IDL.InterfaceFactory;
 export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];
