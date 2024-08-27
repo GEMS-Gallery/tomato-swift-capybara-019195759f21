@@ -1,0 +1,30 @@
+type UserProfile = 
+ record {
+   bio: text;
+   name: text;
+   userId: text;
+ };
+type Tweet = 
+ record {
+   content: text;
+   id: nat;
+   timestamp: Time;
+   userId: text;
+ };
+type Time = int;
+type Result_1 = 
+ variant {
+   err: text;
+   ok: Tweet;
+ };
+type Result = 
+ variant {
+   err: text;
+   ok: UserProfile;
+ };
+service : {
+  createTweet: (text, text) -> (Result_1);
+  getAllTweets: () -> (vec Tweet) query;
+  getUserProfile: (text) -> (opt UserProfile) query;
+  updateUserProfile: (text, text, text) -> (Result);
+}
