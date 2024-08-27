@@ -1,17 +1,28 @@
 type UserProfile = 
  record {
    bio: text;
-   name: text;
-   userId: text;
+   followers: vec UserId;
+   following: vec UserId;
+   userId: UserId;
+   username: text;
  };
+type UserId = principal;
+type TweetId = nat;
 type Tweet = 
  record {
+   author: UserId;
    content: text;
-   id: nat;
+   id: TweetId;
+   likes: nat;
+   retweets: nat;
    timestamp: Time;
-   userId: text;
  };
 type Time = int;
+type Result_2 = 
+ variant {
+   err: text;
+   ok;
+ };
 type Result_1 = 
  variant {
    err: text;
@@ -23,8 +34,12 @@ type Result =
    ok: UserProfile;
  };
 service : {
-  createTweet: (text, text) -> (Result_1);
+  createTweet: (text) -> (Result_1);
+  followUser: (UserId) -> (Result_2);
   getAllTweets: () -> (vec Tweet) query;
-  getUserProfile: (text) -> (opt UserProfile) query;
-  updateUserProfile: (text, text, text) -> (Result);
+  getUserFeed: (UserId) -> (vec Tweet) query;
+  getUserProfile: (UserId) -> (opt UserProfile) query;
+  likeTweet: (TweetId) -> (Result_1);
+  retweet: (TweetId) -> (Result_1);
+  updateUserProfile: (text, text) -> (Result);
 }
