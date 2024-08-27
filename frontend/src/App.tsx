@@ -7,6 +7,8 @@ import RepeatIcon from '@mui/icons-material/Repeat';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { AuthClient } from '@dfinity/auth-client';
 import { Principal } from '@dfinity/principal';
+import { Actor, HttpAgent } from '@dfinity/agent';
+import { idlFactory } from 'declarations/backend/backend.did.js';
 
 type Tweet = {
   id: bigint;
@@ -31,12 +33,19 @@ const App: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authClient, setAuthClient] = useState<AuthClient | null>(null);
+  const [actor, setActor] = useState<any>(null);
   const { control, handleSubmit, reset } = useForm();
 
   useEffect(() => {
     initAuth();
-    fetchTweets();
   }, []);
+
+  useEffect(() => {
+    if (actor) {
+      fetchTweets();
+      fetchUserProfile();
+    }
+  }, [actor]);
 
   const initAuth = async () => {
     try {
@@ -45,11 +54,21 @@ const App: React.FC = () => {
       const isAuthenticated = await client.isAuthenticated();
       setIsAuthenticated(isAuthenticated);
       if (isAuthenticated) {
-        await fetchUserProfile();
+        initActor(client);
       }
     } catch (error) {
       console.error('Error initializing authentication:', error);
     }
+  };
+
+  const initActor = async (client: AuthClient) => {
+    const identity = client.getIdentity();
+    const agent = new HttpAgent({ identity });
+    const newActor = Actor.createActor(idlFactory, {
+      agent,
+      canisterId: process.env.BACKEND_CANISTER_ID,
+    });
+    setActor(newActor);
   };
 
   const login = async () => {
@@ -57,9 +76,9 @@ const App: React.FC = () => {
       try {
         await authClient.login({
           identityProvider: 'https://identity.ic0.app/#authorize',
-          onSuccess: async () => {
+          onSuccess: () => {
             setIsAuthenticated(true);
-            await fetchUserProfile();
+            initActor(authClient);
           },
         });
       } catch (error) {
@@ -73,12 +92,13 @@ const App: React.FC = () => {
       await authClient.logout();
       setIsAuthenticated(false);
       setUserProfile(null);
+      setActor(null);
     }
   };
 
   const fetchTweets = async () => {
     try {
-      const fetchedTweets = await backend.getAllTweets();
+      const fetchedTweets = await actor.getAllTweets();
       setTweets(fetchedTweets);
       setLoading(false);
     } catch (error) {
@@ -88,11 +108,11 @@ const App: React.FC = () => {
   };
 
   const fetchUserProfile = async () => {
-    if (authClient) {
+    if (actor && authClient) {
       try {
         const identity = authClient.getIdentity();
         const principal = identity.getPrincipal();
-        const result = await backend.getUserProfile(principal);
+        const result = await actor.getUserProfile(principal);
         if ('ok' in result) {
           setUserProfile(result.ok);
         } else {
@@ -105,13 +125,13 @@ const App: React.FC = () => {
   };
 
   const onSubmit = async (data: { content: string }) => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !actor) {
       console.error('User must be authenticated to post a tweet');
       return;
     }
     setLoading(true);
     try {
-      const result = await backend.createTweet(data.content);
+      const result = await actor.createTweet(data.content);
       if ('ok' in result) {
         await fetchTweets();
         reset();
@@ -125,12 +145,12 @@ const App: React.FC = () => {
   };
 
   const handleLike = async (tweetId: bigint) => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !actor) {
       console.error('User must be authenticated to like a tweet');
       return;
     }
     try {
-      await backend.likeTweet(tweetId);
+      await actor.likeTweet(tweetId);
       await fetchTweets();
     } catch (error) {
       console.error('Error liking tweet:', error);
@@ -138,12 +158,12 @@ const App: React.FC = () => {
   };
 
   const handleRetweet = async (tweetId: bigint) => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !actor) {
       console.error('User must be authenticated to retweet');
       return;
     }
     try {
-      await backend.retweet(tweetId);
+      await actor.retweet(tweetId);
       await fetchTweets();
     } catch (error) {
       console.error('Error retweeting:', error);
@@ -151,12 +171,12 @@ const App: React.FC = () => {
   };
 
   const handleFollow = async (userToFollow: string) => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !actor) {
       console.error('User must be authenticated to follow another user');
       return;
     }
     try {
-      await backend.followUser(Principal.fromText(userToFollow));
+      await actor.followUser(Principal.fromText(userToFollow));
       await fetchUserProfile();
     } catch (error) {
       console.error('Error following user:', error);
